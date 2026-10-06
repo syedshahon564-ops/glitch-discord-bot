@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: glitch-matrix-discord-bot
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    healthCheckPath: /
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: DISCORD_AUTO_ROLE
+        value: "Member"
+      - key: SECURITY_MODE
+        value: "ON"
+      - key: DISCORD_BOT_TOKEN
+        sync: false

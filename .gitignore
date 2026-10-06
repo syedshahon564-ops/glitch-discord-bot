@@ -1,0 +1,12 @@
+# Environment variables (Never commit bot tokens to GitHub)
+.env
+*.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Data
+data/discord.db
