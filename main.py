@@ -785,7 +785,12 @@ async def disable_native_automod_blocking(guild: discord.Guild):
     so that Discord does not show the red 'This can't be posted because it contains content blocked by this server' error,
     allowing our bot to receive the message, delete it, and INSTANTLY BAN the user directly.
     """
-    if not guild or not guild.me.guild_permissions.manage_guild:
+    if not guild or not getattr(guild, "me", None):
+        return
+    # AutoMod API rules only exist on servers with Discord 'COMMUNITY' feature enabled
+    if "COMMUNITY" not in getattr(guild, "features", []):
+        return
+    if not guild.me.guild_permissions.manage_guild:
         return
     try:
         rules = await guild.fetch_automod_rules()
@@ -797,8 +802,11 @@ async def disable_native_automod_blocking(guild: discord.Guild):
             if has_block and rule.enabled:
                 await rule.edit(enabled=False, reason="GMX Bot handles direct instant bans")
                 print(f"🛡️ [AUTOMOD OVERRIDE] Disabled native block rule '{rule.name}' in '{guild.name}' so GMX direct ban takes over.", flush=True)
-    except Exception as err:
-        print(f"[AUTOMOD OVERRIDE] Could not adjust native rules in '{guild.name}': {err}", flush=True)
+    except (discord.NotFound, discord.Forbidden):
+        # Normal behavior for servers without custom AutoMod rules
+        pass
+    except Exception:
+        pass
 
 
 # ─── ROGUE WI-FI DEVICE INTRUSION DISPATCHER ─────────────────────────────────
@@ -926,7 +934,7 @@ async def on_ready():
 
     if not router_alert_dispatcher.is_running():
         router_alert_dispatcher.start()
-        print("🚨 [ROUTER DISPATCHER] Background Wi-Fi intrusion alert daemon started.")
+        print("🛡️ [ROUTER DISPATCHER] Wi-Fi intrusion monitoring service initialized.", flush=True)
 
     # Automatically disable native block popups across all connected servers
     for g in bot.guilds:
